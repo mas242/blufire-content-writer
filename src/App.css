@@ -1,0 +1,127 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    background-color: #fff;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 20px;
+}
+
+.tab {
+    flex: 1;
+    padding: 10px;
+    background-color: #333;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+}
+
+.tab.active {
+    background-color: #791714;
+}
+
+.tab:hover {
+    background-color: #791714;
+}
+
+.content {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.large-text-area-container {
+    position: relative;
+    margin-bottom: 20px; /* Add margin to ensure spacing */
+}
+
+.large-text-area {
+    width: 100%;
+    height: 500px; /* Updated height */
+    padding: 10px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    resize: none;
+    padding-bottom: 50px; /* Add padding to the bottom */
+    padding-right: 80px; /* Add padding to the right */
+}
+
+.version-indicator {
+    position: absolute;
+    bottom: 20px; /* Adjust the bottom position */
+    right: 20px; /* Adjust the right position */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.version-indicator span {
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.version-indicator button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+.version-indicator button:hover {
+    background-color: #791714;
+}
+
+.inputs, .keywords, .controls {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.inputs input, .keywords textarea {
+    width: 48%;
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+.controls input {
+    width: 80px; /* Set a fixed width for the Version input box */
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+button {
+    padding: 10px 20px;
+    border: none;
+    background-color: #333;
+    color: #fff;
+    cursor: pointer;
+    margin: 5px;
+}
+
+button:hover {
+    background-color: #791714;
+}
+
+.step {
+    display: none;
+}
+
+.step.active {
+    display: block;
+}

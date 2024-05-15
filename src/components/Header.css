@@ -1,0 +1,31 @@
+.header {
+    background-color: #030F2B;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+  }
+  
+  .header-content {
+    display: flex;
+    align-items: center;
+  }
+  
+  .logo {
+    height: 50px; /* Adjust size as needed */
+    margin-right: 10px;
+  }
+  
+  .text-container {
+    display: flex;
+    align-items: center;
+  }
+  
+  .content-writer-title {
+    font-size: 2em;
+    font-weight: bold;
+    margin: 0;
+    font-family: 'Arial', sans-serif; /* Adjust the font-family to match the image font */
+  }
+  
