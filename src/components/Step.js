@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Spinner from './Spinner';
 
-const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, onVersionChange, onGenerate, onNextSection, step1Responses }) => {
+const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, onVersionChange, onGenerate, onNextSection, onProofread, step1Responses, step2Versions }) => {
   const [wordCount, setWordCount] = useState("");
   const [primaryKeyword, setPrimaryKeyword] = useState("");
   const [secondaryKeywords, setSecondaryKeywords] = useState("");
@@ -19,32 +19,10 @@ const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, o
     }
   }, [currentVersionIndex, versions]);
 
-  useEffect(() => {
-    // Retrieve and set input values from local storage for Step 1
-    if (stepNumber === 1 && currentStep === 1) {
-      const savedWordCount = localStorage.getItem('wordCount');
-      const savedPrimaryKeyword = localStorage.getItem('primaryKeyword');
-      const savedSecondaryKeywords = localStorage.getItem('secondaryKeywords');
-      const savedSemanticKeywords = localStorage.getItem('semanticKeywords');
-      
-      if (savedWordCount) setWordCount(savedWordCount);
-      if (savedPrimaryKeyword) setPrimaryKeyword(savedPrimaryKeyword);
-      if (savedSecondaryKeywords) setSecondaryKeywords(savedSecondaryKeywords);
-      if (savedSemanticKeywords) setSemanticKeywords(savedSemanticKeywords);
-    }
-  }, [stepNumber, currentStep]);
-
   if (stepNumber !== currentStep) return null;
 
   const handleGenerateClick = async () => {
     setLoading(true);
-
-    // Save input values to local storage
-    localStorage.setItem('wordCount', wordCount);
-    localStorage.setItem('primaryKeyword', primaryKeyword);
-    localStorage.setItem('secondaryKeywords', secondaryKeywords);
-    localStorage.setItem('semanticKeywords', semanticKeywords);
-
     const message = `
       Word count: ${wordCount}+ words | Primary keyword: ${primaryKeyword} | Secondary keywords: ${secondaryKeywords} | Semantically related keywords: ${semanticKeywords}
     `;
@@ -72,7 +50,11 @@ const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, o
       secondaryKeywords: ${step1Version.secondaryKeywords}
       semanticKeywords: ${step1Version.semanticKeywords}
     `;
-    await onGenerate({ message, step: 2 });
+    const inputValues = {
+      message,
+      step: 2
+    };
+    await onGenerate(inputValues);
     setLoading(false);
   };
 
@@ -94,7 +76,17 @@ const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, o
       secondaryKeywords: ${step1Version.secondaryKeywords}
       semanticKeywords: ${step1Version.semanticKeywords}
     `;
-    await onGenerate({ message, step: 2 });
+    const inputValues = {
+      message,
+      step: 2
+    };
+    await onGenerate(inputValues);
+    setLoading(false);
+  };
+
+  const handleProofreadClick = async () => {
+    setLoading(true);
+    await onProofread();
     setLoading(false);
   };
 
@@ -142,6 +134,14 @@ const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, o
               <button onClick={handleNextSectionClick} disabled={loading} className={loading ? 'disabled-button' : ''}>Next Section</button>
             </div>
             <button onClick={handleGenerateFullArticleClick} disabled={loading} className={loading ? 'disabled-button' : ''}>Generate Full Article</button>
+            <button onClick={handleProofreadClick} disabled={loading} className={loading ? 'disabled-button' : ''}>Proofread</button>
+          </>
+        )}
+        {stepNumber === 3 && (
+          <>
+            <div className="step2-version">
+              <span>Proofreading Based off Step 2 Version: {versions[currentVersionIndex]?.step2VersionIndex + 1}</span>
+            </div>
           </>
         )}
       </div>

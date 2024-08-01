@@ -1,0 +1,9 @@
+8/1/2024 todo list
+
+-Make the textbox area editable and potentially overwrite the local save data
+-make a clear local save data
+-make local save data be by project in a folder on the left, and let that project be namable
+-explain full article gen might be best as a step 5
+-do we want to have a style for each set of assistants? right now it's spreadlove themed from those assistants.
+-switching tabs remembers your version number you were on
+-doubles proofreading window
