@@ -1,38 +1,38 @@
 import React, { useState, useEffect } from 'react';
 import Spinner from './Spinner';
 
-const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, onVersionChange, onGenerate, onNextSection, onProofread, step1Responses, step2Versions }) => {
-  const [wordCount, setWordCount] = useState("");
-  const [primaryKeyword, setPrimaryKeyword] = useState("");
-  const [secondaryKeywords, setSecondaryKeywords] = useState("");
-  const [semanticKeywords, setSemanticKeywords] = useState("");
+const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, onVersionChange, onGenerate, onNextSection, onProofread, step1Responses, step2Versions, step1Inputs, setStep1Inputs }) => {
   const [selectedStep1Version, setSelectedStep1Version] = useState(0);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (versions[currentVersionIndex]) {
       const versionData = versions[currentVersionIndex];
-      setWordCount(versionData.wordCount || "");
-      setPrimaryKeyword(versionData.primaryKeyword || "");
-      setSecondaryKeywords(versionData.secondaryKeywords || "");
-      setSemanticKeywords(versionData.semanticKeywords || "");
+      if (stepNumber === 1) {
+        setStep1Inputs({
+          wordCount: versionData.wordCount || "",
+          primaryKeyword: versionData.primaryKeyword || "",
+          secondaryKeywords: versionData.secondaryKeywords || "",
+          semanticKeywords: versionData.semanticKeywords || ""
+        });
+      }
     }
-  }, [currentVersionIndex, versions]);
+  }, [currentVersionIndex, versions, stepNumber, setStep1Inputs]);
 
   if (stepNumber !== currentStep) return null;
 
   const handleGenerateClick = async () => {
     setLoading(true);
     const message = `
-      Word count: ${wordCount}+ words | Primary keyword: ${primaryKeyword} | Secondary keywords: ${secondaryKeywords} | Semantically related keywords: ${semanticKeywords}
+      Word count: ${step1Inputs.wordCount}+ words | Primary keyword: ${step1Inputs.primaryKeyword} | Secondary keywords: ${step1Inputs.secondaryKeywords} | Semantically related keywords: ${step1Inputs.semanticKeywords}
     `;
     const inputValues = {
       message,
       step: stepNumber,
-      wordCount,
-      primaryKeyword,
-      secondaryKeywords,
-      semanticKeywords
+      wordCount: step1Inputs.wordCount,
+      primaryKeyword: step1Inputs.primaryKeyword,
+      secondaryKeywords: step1Inputs.secondaryKeywords,
+      semanticKeywords: step1Inputs.semanticKeywords
     };
     await onGenerate(inputValues);
     setLoading(false);
@@ -71,10 +71,10 @@ const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, o
       Here is a content outline. Content Outline:
       ${step1Version.response}
       Keywords Integration: The primary keywords will appear in the introduction and in several subheadings. Secondary keywords will be weaved throughout the outline's sections naturally, ensuring relevance to the content. Semantically related keywords will be used to enrich the content and improve search visibility.
-      wordCount: ${step1Version.wordCount}
-      primaryKeyword: ${step1Version.primaryKeyword}
-      secondaryKeywords: ${step1Version.secondaryKeywords}
-      semanticKeywords: ${step1Version.semanticKeywords}
+      wordCount: ${step1Inputs.wordCount}
+      primaryKeyword: ${step1Inputs.primaryKeyword}
+      secondaryKeywords: ${step1Inputs.secondaryKeywords}
+      semanticKeywords: ${step1Inputs.semanticKeywords}
     `;
     const inputValues = {
       message,
@@ -110,12 +110,12 @@ const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, o
         {stepNumber === 1 && (
           <>
             <div className="inputs">
-              <input type="number" placeholder="Word Count" value={wordCount} onChange={(e) => setWordCount(e.target.value)} />
-              <input type="text" placeholder="Primary Keyword" value={primaryKeyword} onChange={(e) => setPrimaryKeyword(e.target.value)} />
+              <input type="number" placeholder="Word Count" value={step1Inputs.wordCount} onChange={(e) => setStep1Inputs({ ...step1Inputs, wordCount: e.target.value })} />
+              <input type="text" placeholder="Primary Keyword" value={step1Inputs.primaryKeyword} onChange={(e) => setStep1Inputs({ ...step1Inputs, primaryKeyword: e.target.value })} />
             </div>
             <div className="keywords">
-              <textarea placeholder="Secondary Keywords" value={secondaryKeywords} onChange={(e) => setSecondaryKeywords(e.target.value)}></textarea>
-              <textarea placeholder="Semantically Related Keywords" value={semanticKeywords} onChange={(e) => setSemanticKeywords(e.target.value)}></textarea>
+              <textarea placeholder="Secondary Keywords" value={step1Inputs.secondaryKeywords} onChange={(e) => setStep1Inputs({ ...step1Inputs, secondaryKeywords: e.target.value })}></textarea>
+              <textarea placeholder="Semantically Related Keywords" value={step1Inputs.semanticKeywords} onChange={(e) => setStep1Inputs({ ...step1Inputs, semanticKeywords: e.target.value })}></textarea>
             </div>
             <button onClick={handleGenerateClick} disabled={loading} className={loading ? 'disabled-button' : ''}>Generate Outline</button>
           </>

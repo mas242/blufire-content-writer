@@ -12,6 +12,14 @@ function App() {
   const [currentVersions, setCurrentVersions] = useState(getFromLocalStorage('currentVersions') || { 1: 0, 2: 0, 3: 0 });
   const [error, setError] = useState(null);
 
+  // State for Step 1 input values
+  const [step1Inputs, setStep1Inputs] = useState({
+    wordCount: '',
+    primaryKeyword: '',
+    secondaryKeywords: '',
+    semanticKeywords: ''
+  });
+
   useEffect(() => {
     saveToLocalStorage('threadIds', threadIds);
   }, [threadIds]);
@@ -104,9 +112,23 @@ function App() {
     setCurrentVersions({ ...currentVersions, [step]: newVersionIndex });
   };
 
+  const handleClearStorage = () => {
+    localStorage.clear();
+    setThreadIds({});
+    setResponses({});
+    setCurrentVersions({ 1: 0, 2: 0, 3: 0 });
+    setCurrentStep(1);
+    setStep1Inputs({
+      wordCount: '',
+      primaryKeyword: '',
+      secondaryKeywords: '',
+      semanticKeywords: ''
+    });
+  };
+
   return (
     <div className="container">
-      <Header />
+      <Header onClearStorage={handleClearStorage} />
       <Tabs currentStep={currentStep} onTabClick={handleTabClick} />
       {error && <div className="error">{error}</div>}
       {[1, 2, 3].map(step => (
@@ -122,6 +144,8 @@ function App() {
           onProofread={handleProofread}
           step1Responses={responses[1] || []} // Pass Step 1 responses to Step component
           step2Versions={responses[2] || []} // Pass Step 2 responses to Step component
+          step1Inputs={step1Inputs} // Pass Step 1 input values to Step component
+          setStep1Inputs={setStep1Inputs} // Pass setState function for Step 1 input values to Step component
         />
       ))}
     </div>
