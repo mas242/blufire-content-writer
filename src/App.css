@@ -125,3 +125,21 @@ button:hover {
 .step.active {
     display: block;
 }
+
+.disabled-button {
+    background-color: grey;
+    cursor: not-allowed;
+  }
+  
+  button:disabled,
+  button.disabled-button {
+    background-color: grey;
+    cursor: default; /* Change this to default */
+  }
+  
+  button:disabled:hover,
+  button.disabled-button:hover {
+    background-color: grey;
+    cursor: default; /* Change this to default */
+  }
+  
