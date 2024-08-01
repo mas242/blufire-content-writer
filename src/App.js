@@ -3,13 +3,16 @@ import './App.css';
 import Header from './components/Header';
 import Tabs from './components/Tabs';
 import Step from './components/Step';
+import ProjectList from './components/ProjectList';
 import { saveToLocalStorage, getFromLocalStorage, startConversation, sendMessage } from './utils/utils';
 
 function App() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [threadIds, setThreadIds] = useState(getFromLocalStorage('threadIds') || {});
-  const [responses, setResponses] = useState(getFromLocalStorage('responses') || {});
-  const [currentVersions, setCurrentVersions] = useState(getFromLocalStorage('currentVersions') || { 1: 0, 2: 0, 3: 0 });
+  const [projects, setProjects] = useState(getFromLocalStorage('projects') || []);
+  const [currentProjectId, setCurrentProjectId] = useState(null);
+  const [threadIds, setThreadIds] = useState({});
+  const [responses, setResponses] = useState({});
+  const [currentVersions, setCurrentVersions] = useState({ 1: 0, 2: 0, 3: 0 });
   const [error, setError] = useState(null);
 
   // State for Step 1 input values
@@ -21,16 +24,21 @@ function App() {
   });
 
   useEffect(() => {
-    saveToLocalStorage('threadIds', threadIds);
-  }, [threadIds]);
+    if (currentProjectId !== null) {
+      saveToLocalStorage('projects', projects);
+    }
+  }, [projects, currentProjectId]);
 
   useEffect(() => {
-    saveToLocalStorage('responses', responses);
-  }, [responses]);
-
-  useEffect(() => {
-    saveToLocalStorage('currentVersions', currentVersions);
-  }, [currentVersions]);
+    if (currentProjectId !== null) {
+      const project = projects.find(proj => proj.id === currentProjectId);
+      if (project) {
+        setThreadIds(project.threadIds || {});
+        setResponses(project.responses || {});
+        setCurrentVersions(project.currentVersions || { 1: 0, 2: 0, 3: 0 });
+      }
+    }
+  }, [currentProjectId, projects]);
 
   const handleTabClick = (step) => {
     setCurrentStep(step);
@@ -54,6 +62,7 @@ function App() {
       newResponses[step].push({ response: response.response, thread_id: threadId, wordCount, primaryKeyword, secondaryKeywords, semanticKeywords });
       setResponses(newResponses);
       setCurrentVersions({ ...currentVersions, [step]: newResponses[step].length - 1 });
+      updateProjectData({ threadIds, responses: newResponses, currentVersions });
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -70,6 +79,7 @@ function App() {
       const newResponses = { ...responses };
       newResponses[step][currentVersions[step]].response += `\n${response.response}`;
       setResponses(newResponses);
+      updateProjectData({ threadIds, responses: newResponses, currentVersions });
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -97,6 +107,7 @@ function App() {
       newResponses[step].push({ response: response.response, step2VersionIndex });
       setResponses(newResponses);
       setCurrentVersions({ ...currentVersions, [step]: newResponses[step].length - 1 });
+      updateProjectData({ threadIds, responses: newResponses, currentVersions });
       setCurrentStep(3);
       setError(null);
     } catch (err) {
@@ -110,6 +121,7 @@ function App() {
       : Math.max(currentVersions[step] - 1, 0);
     
     setCurrentVersions({ ...currentVersions, [step]: newVersionIndex });
+    updateProjectData({ threadIds, responses, currentVersions: { ...currentVersions, [step]: newVersionIndex } });
   };
 
   const handleClearStorage = () => {
@@ -126,28 +138,84 @@ function App() {
     });
   };
 
+  const updateProjectData = (data) => {
+    setProjects(projects.map(proj => proj.id === currentProjectId ? { ...proj, ...data } : proj));
+  };
+
+  const handleCreateProject = (name, description) => {
+    const newProject = {
+      id: Date.now(),
+      name,
+      description,
+      threadIds: {},
+      responses: {},
+      currentVersions: { 1: 0, 2: 0, 3: 0 }
+    };
+    setProjects([...projects, newProject]);
+    setCurrentProjectId(newProject.id);
+  };
+
+  const handleEditProject = (id, name, description) => {
+    setProjects(projects.map(proj => proj.id === id ? { ...proj, name, description } : proj));
+  };
+
+  const handleExportProject = (id) => {
+    const project = projects.find(proj => proj.id === id);
+    if (project) {
+      const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${project.name}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const handleImportProject = (file) => {
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const importedProject = JSON.parse(event.target.result);
+      setProjects([...projects, importedProject]);
+    };
+    reader.readAsText(file);
+  };
+
   return (
     <div className="container">
       <Header onClearStorage={handleClearStorage} />
-      <Tabs currentStep={currentStep} onTabClick={handleTabClick} />
-      {error && <div className="error">{error}</div>}
-      {[1, 2, 3].map(step => (
-        <Step
-          key={step}
-          stepNumber={step}
-          currentStep={currentStep}
-          versions={responses[step] || [""]}
-          currentVersionIndex={currentVersions[step]}
-          onVersionChange={(direction) => handleVersionChange(step, direction)}
-          onGenerate={(inputValues) => handleGenerate(inputValues)}
-          onNextSection={() => handleNextSection(step)}
-          onProofread={handleProofread}
-          step1Responses={responses[1] || []} // Pass Step 1 responses to Step component
-          step2Versions={responses[2] || []} // Pass Step 2 responses to Step component
-          step1Inputs={step1Inputs} // Pass Step 1 input values to Step component
-          setStep1Inputs={setStep1Inputs} // Pass setState function for Step 1 input values to Step component
+      <div className="main-content">
+        <ProjectList
+          projects={projects}
+          onCreateProject={handleCreateProject}
+          onEditProject={handleEditProject}
+          onExportProject={handleExportProject}
+          onImportProject={handleImportProject}
+          onSelectProject={setCurrentProjectId}
+          currentProjectId={currentProjectId}
         />
-      ))}
+        <div className="content">
+          <Tabs currentStep={currentStep} onTabClick={handleTabClick} />
+          {error && <div className="error">{error}</div>}
+          {[1, 2, 3].map(step => (
+            <Step
+              key={step}
+              stepNumber={step}
+              currentStep={currentStep}
+              versions={responses[step] || [""]}
+              currentVersionIndex={currentVersions[step]}
+              onVersionChange={(direction) => handleVersionChange(step, direction)}
+              onGenerate={(inputValues) => handleGenerate(inputValues)}
+              onNextSection={() => handleNextSection(step)}
+              onProofread={handleProofread}
+              step1Responses={responses[1] || []} // Pass Step 1 responses to Step component
+              step2Versions={responses[2] || []} // Pass Step 2 responses to Step component
+              step1Inputs={step1Inputs} // Pass Step 1 input values to Step component
+              setStep1Inputs={setStep1Inputs} // Pass setState function for Step 1 input values to Step component
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

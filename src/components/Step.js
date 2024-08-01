@@ -139,6 +139,18 @@ const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, o
         )}
         {stepNumber === 3 && (
           <>
+            <div className="large-text-area-container" style={{ position: 'relative' }}>
+              <textarea className="large-text-area" value={versions[currentVersionIndex]?.response || ""} readOnly />
+              {loading && <Spinner />}
+              <div className="version-indicator">
+                <span>Version</span>
+                <div>
+                  <button onClick={() => onVersionChange('prev')} disabled={loading || currentVersionIndex === 0}>&lt;</button>
+                  <span>{currentVersionIndex + 1} / {versions.length}</span>
+                  <button onClick={() => onVersionChange('next')} disabled={loading || currentVersionIndex === versions.length - 1}>&gt;</button>
+                </div>
+              </div>
+            </div>
             <div className="step2-version">
               <span>Proofreading Based off Step 2 Version: {versions[currentVersionIndex]?.step2VersionIndex + 1}</span>
             </div>

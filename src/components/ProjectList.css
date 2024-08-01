@@ -1,0 +1,82 @@
+.project-list {
+    width: 200px;
+    background-color: #f4f4f4;
+    padding: 10px;
+    border-right: 1px solid #ccc;
+  }
+  
+  .project-list-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .add-project-button {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+  
+  .add-project-button:hover {
+    background-color: #45a049;
+  }
+  
+  .project-list ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .project-list li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px;
+    cursor: pointer;
+  }
+  
+  .project-list li.active {
+    background-color: #ddd;
+  }
+  
+  .project-list li span {
+    flex-grow: 1;
+  }
+  
+  .project-list li button {
+    background-color: #ddd;
+    border: none;
+    cursor: pointer;
+    margin-left: 5px;
+  }
+  
+  .project-list li button:hover {
+    background-color: #ccc;
+  }
+  
+  .dialog {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+  }
+  
+  .dialog input,
+  .dialog textarea {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 5px;
+  }
+  
+  .dialog button {
+    margin-right: 10px;
+  }
+  
