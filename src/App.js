@@ -24,7 +24,8 @@ function App() {
     setCurrentStep(step);
   };
 
-  const handleGenerate = async (step, inputValues) => {
+  const handleGenerate = async (inputValues) => {
+    const { message, step, wordCount, primaryKeyword, secondaryKeywords, semanticKeywords } = inputValues;
     try {
       let threadId = threadIds[step];
       if (!threadId) {
@@ -33,16 +34,30 @@ function App() {
         setThreadIds({ ...threadIds, [step]: threadId });
       }
 
-      const message = `Word count: ${inputValues.wordCount} words | Primary keyword: ${inputValues.primaryKeyword} | Secondary keywords: ${inputValues.secondaryKeywords} | Semantically related keywords: ${inputValues.semanticKeywords}`;
       const response = await sendMessage(threadId, message, step);
-
       const newResponses = { ...responses };
       if (!newResponses[step]) {
         newResponses[step] = [];
       }
-      newResponses[step].push({ response: response.response, ...inputValues });
+      newResponses[step].push({ response: response.response, thread_id: threadId, wordCount, primaryKeyword, secondaryKeywords, semanticKeywords });
       setResponses(newResponses);
       setCurrentVersions({ ...currentVersions, [step]: newResponses[step].length - 1 });
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleNextSection = async (step) => {
+    try {
+      const currentVersion = responses[step][currentVersions[step]];
+      const threadId = currentVersion.thread_id;
+      const message = "Please Generate Next Sections";
+
+      const response = await sendMessage(threadId, message, step);
+      const newResponses = { ...responses };
+      newResponses[step][currentVersions[step]].response += `\n${response.response}`;
+      setResponses(newResponses);
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -70,7 +85,9 @@ function App() {
           versions={responses[step] || [""]}
           currentVersionIndex={currentVersions[step]}
           onVersionChange={(direction) => handleVersionChange(step, direction)}
-          onGenerate={(inputValues) => handleGenerate(step, inputValues)}
+          onGenerate={(inputValues) => handleGenerate(inputValues)}
+          onNextSection={() => handleNextSection(step)}
+          step1Responses={responses[1] || []} // Pass Step 1 responses to Step component
         />
       ))}
     </div>

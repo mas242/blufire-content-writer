@@ -3,7 +3,7 @@ export const saveToLocalStorage = (key, value) => {
     localStorage.setItem(key, JSON.stringify(value));
   };
   
-  export const getFromLocalStorage = (key) => {
+export const getFromLocalStorage = (key) => {
     const value = localStorage.getItem(key);
     return value ? JSON.parse(value) : null;
   };
@@ -18,7 +18,7 @@ export const startConversation = async (step) => {
     return data;
   };
   
-  export const sendMessage = async (threadId, message, step) => {
+export const sendMessage = async (threadId, message, step) => {
     const response = await fetch(`https://blufire-content-writer-server.replit.app/chat`, {
       method: 'POST',
       headers: {
