@@ -78,7 +78,7 @@ const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, o
     `;
     const inputValues = {
       message,
-      step: 2
+      step: 5
     };
     await onGenerate(inputValues);
     setLoading(false);
