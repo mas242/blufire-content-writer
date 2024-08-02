@@ -1,11 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import './ProjectList.css';
 
-const ProjectList = ({ projects, onCreateProject, onEditProject, onExportProject, onImportProject, onSelectProject, currentProjectId }) => {
+const ProjectList = ({ projects, onCreateProject, onEditProject, onRemoveProject, onExportProject, onImportProject, onSelectProject, currentProjectId, onClearStorage }) => {
   const [showDialog, setShowDialog] = useState(false);
   const [editProjectId, setEditProjectId] = useState(null);
   const [projectName, setProjectName] = useState('');
   const [projectDescription, setProjectDescription] = useState('');
+  const projectNameInputRef = useRef(null);
+
+  useEffect(() => {
+    if (showDialog) {
+      projectNameInputRef.current.focus();
+    }
+  }, [showDialog]);
 
   const handleCreate = () => {
     setEditProjectId(null);
@@ -39,16 +46,23 @@ const ProjectList = ({ projects, onCreateProject, onEditProject, onExportProject
 
   return (
     <div className="project-list">
-      <div className="project-list-header">
-        <button className="add-project-button" onClick={handleCreate}>+</button>
-        <input type="file" accept="application/json" onChange={handleImport} />
+      <div className="project-functions">
+        <button className="small-button add-project-button" onClick={handleCreate}>New Project</button>
+        <label className="small-button upload-project-label">
+          <span>+</span> Upload Project
+          <input type="file" accept="application/json" onChange={handleImport} />
+        </label>
+        <button className="small-button remove-all-button" onClick={onClearStorage}>Remove All Projects</button>
       </div>
-      <ul>
+      <ul className="project-list-items">
         {projects.map(project => (
           <li key={project.id} className={currentProjectId === project.id ? 'active' : ''}>
             <span onClick={() => onSelectProject(project.id)}>{project.name}</span>
-            <button onClick={() => handleEdit(project)}>Edit</button>
-            <button onClick={() => onExportProject(project.id)}>Export</button>
+            <div className="project-buttons">
+              <button onClick={() => handleEdit(project)} className="small-button darkred-button">Edit</button>
+              <button onClick={() => onRemoveProject(project.id)} className="small-button darkred-button">Remove</button>
+              <button onClick={() => onExportProject(project.id)} className="small-button darkred-button">Export</button>
+            </div>
           </li>
         ))}
       </ul>
@@ -59,6 +73,7 @@ const ProjectList = ({ projects, onCreateProject, onEditProject, onExportProject
             placeholder="Project Name"
             value={projectName}
             onChange={(e) => setProjectName(e.target.value)}
+            ref={projectNameInputRef}
           />
           <textarea
             placeholder="Project Description"

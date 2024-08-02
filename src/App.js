@@ -6,170 +6,69 @@ import Step from './components/Step';
 import ProjectList from './components/ProjectList';
 import { saveToLocalStorage, getFromLocalStorage, startConversation, sendMessage } from './utils/utils';
 
-function App() {
+const App = () => {
   const [currentStep, setCurrentStep] = useState(1);
   const [projects, setProjects] = useState(getFromLocalStorage('projects') || []);
   const [currentProjectId, setCurrentProjectId] = useState(null);
-  const [threadIds, setThreadIds] = useState({});
-  const [responses, setResponses] = useState({});
-  const [currentVersions, setCurrentVersions] = useState({ 1: 0, 2: 0, 3: 0 });
   const [error, setError] = useState(null);
 
-  // State for Step 1 input values
-  const [step1Inputs, setStep1Inputs] = useState({
-    wordCount: '',
-    primaryKeyword: '',
-    secondaryKeywords: '',
-    semanticKeywords: ''
-  });
+  useEffect(() => {
+    saveToLocalStorage('projects', projects);
+  }, [projects]);
+
+  useEffect(() => {
+    const savedCurrentProjectId = getFromLocalStorage('currentProjectId');
+    if (savedCurrentProjectId) {
+      setCurrentProjectId(savedCurrentProjectId);
+    }
+  }, []);
 
   useEffect(() => {
     if (currentProjectId !== null) {
-      saveToLocalStorage('projects', projects);
+      saveToLocalStorage('currentProjectId', currentProjectId);
     }
-  }, [projects, currentProjectId]);
-
-  useEffect(() => {
-    if (currentProjectId !== null) {
-      const project = projects.find(proj => proj.id === currentProjectId);
-      if (project) {
-        setThreadIds(project.threadIds || {});
-        setResponses(project.responses || {});
-        setCurrentVersions(project.currentVersions || { 1: 0, 2: 0, 3: 0 });
-      }
-    }
-  }, [currentProjectId, projects]);
+  }, [currentProjectId]);
 
   const handleTabClick = (step) => {
     setCurrentStep(step);
   };
 
-  const handleGenerate = async (inputValues) => {
-    const { message, step, wordCount, primaryKeyword, secondaryKeywords, semanticKeywords } = inputValues;
-    try {
-      let threadId = threadIds[step];
-      if (!threadId) {
-        const data = await startConversation(step);
-        threadId = data.thread_id;
-        setThreadIds({ ...threadIds, [step]: threadId });
-      }
-
-      const response = await sendMessage(threadId, message, step);
-      const newResponses = { ...responses };
-      if (!newResponses[step]) {
-        newResponses[step] = [];
-      }
-      newResponses[step].push({ response: response.response, thread_id: threadId, wordCount, primaryKeyword, secondaryKeywords, semanticKeywords });
-      setResponses(newResponses);
-      setCurrentVersions({ ...currentVersions, [step]: newResponses[step].length - 1 });
-      updateProjectData({ threadIds, responses: newResponses, currentVersions });
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleNextSection = async (step) => {
-    try {
-      const currentVersion = responses[step][currentVersions[step]];
-      const threadId = currentVersion.thread_id;
-      const message = "Please Generate Next Sections";
-
-      const response = await sendMessage(threadId, message, step);
-      const newResponses = { ...responses };
-      newResponses[step][currentVersions[step]].response += `\n${response.response}`;
-      setResponses(newResponses);
-      updateProjectData({ threadIds, responses: newResponses, currentVersions });
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleProofread = async () => {
-    const step2VersionIndex = currentVersions[2];
-    const step2Version = responses[2][step2VersionIndex];
-    const message = `
-      Here is an article please keep the final word count around ${step2Version.wordCount} words. Use Multiple responses if necessary. Include Markdown Formatting in final responses.
-      ${step2Version.response}
-    `;
-    const step = 3;
-    try {
-      const data = await startConversation(step);
-      const threadId = data.thread_id;
-      setThreadIds({ ...threadIds, [step]: threadId });
-
-      const response = await sendMessage(threadId, message, step);
-      const newResponses = { ...responses };
-      if (!newResponses[step]) {
-        newResponses[step] = [];
-      }
-      newResponses[step].push({ response: response.response, step2VersionIndex });
-      setResponses(newResponses);
-      setCurrentVersions({ ...currentVersions, [step]: newResponses[step].length - 1 });
-      updateProjectData({ threadIds, responses: newResponses, currentVersions });
-      setCurrentStep(3);
-      setError(null);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-
-  const handleVersionChange = (step, direction) => {
-    const newVersionIndex = direction === 'next' 
-      ? Math.min(currentVersions[step] + 1, responses[step].length - 1) 
-      : Math.max(currentVersions[step] - 1, 0);
-    
-    setCurrentVersions({ ...currentVersions, [step]: newVersionIndex });
-    updateProjectData({ threadIds, responses, currentVersions: { ...currentVersions, [step]: newVersionIndex } });
-  };
-
-  const handleClearStorage = () => {
-    localStorage.clear();
-    setThreadIds({});
-    setResponses({});
-    setCurrentVersions({ 1: 0, 2: 0, 3: 0 });
-    setCurrentStep(1);
-    setStep1Inputs({
-      wordCount: '',
-      primaryKeyword: '',
-      secondaryKeywords: '',
-      semanticKeywords: ''
-    });
-  };
-
-  const updateProjectData = (data) => {
-    setProjects(projects.map(proj => proj.id === currentProjectId ? { ...proj, ...data } : proj));
-  };
-
   const handleCreateProject = (name, description) => {
     const newProject = {
-      id: Date.now(),
+      id: Date.now().toString(),
       name,
       description,
-      threadIds: {},
-      responses: {},
+      steps: { 1: [], 2: [], 3: [] },
       currentVersions: { 1: 0, 2: 0, 3: 0 }
     };
     setProjects([...projects, newProject]);
     setCurrentProjectId(newProject.id);
   };
 
-  const handleEditProject = (id, name, description) => {
-    setProjects(projects.map(proj => proj.id === id ? { ...proj, name, description } : proj));
+  const handleEditProject = (projectId, name, description) => {
+    const updatedProjects = projects.map(project =>
+      project.id === projectId ? { ...project, name, description } : project
+    );
+    setProjects(updatedProjects);
   };
 
-  const handleExportProject = (id) => {
-    const project = projects.find(proj => proj.id === id);
-    if (project) {
-      const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `${project.name}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
+  const handleRemoveProject = (projectId) => {
+    const updatedProjects = projects.filter(project => project.id !== projectId);
+    setProjects(updatedProjects);
+    if (currentProjectId === projectId) {
+      setCurrentProjectId(null);
     }
+  };
+
+  const handleExportProject = (projectId) => {
+    const project = projects.find(project => project.id === projectId);
+    const blob = new Blob([JSON.stringify(project)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${project.name}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleImportProject = (file) => {
@@ -181,43 +80,98 @@ function App() {
     reader.readAsText(file);
   };
 
+  const handleClearStorage = () => {
+    setProjects([]);
+    setCurrentProjectId(null);
+  };
+
+  const handleSelectProject = (projectId) => {
+    setCurrentProjectId(projectId);
+  };
+
+  const handleGenerate = async (inputValues, step) => {
+    const project = projects.find(project => project.id === currentProjectId);
+    if (!project) return;
+
+    try {
+      let threadId = project.steps[step].threadId;
+      if (!threadId) {
+        const data = await startConversation(step);
+        threadId = data.thread_id;
+        project.steps[step].threadId = threadId;
+        setProjects([...projects]);
+      }
+
+      const response = await sendMessage(threadId, inputValues.message, step);
+      const newStepData = { ...inputValues, response: response.response, thread_id: threadId };
+      project.steps[step].push(newStepData);
+      project.currentVersions[step] = project.steps[step].length - 1; // Automatically select the new version
+      setProjects([...projects]);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleNextSection = async (step) => {
+    const project = projects.find(project => project.id === currentProjectId);
+    if (!project) return;
+
+    try {
+      const currentVersion = project.steps[step][project.currentVersions[step]];
+      const threadId = currentVersion.thread_id;
+      const message = "Please Generate Next Sections";
+
+      const response = await sendMessage(threadId, message, step);
+      currentVersion.response += `\n${response.response}`;
+      setProjects([...projects]);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
   return (
     <div className="container">
-      <Header onClearStorage={handleClearStorage} />
+      <Header />
       <div className="main-content">
         <ProjectList
           projects={projects}
           onCreateProject={handleCreateProject}
           onEditProject={handleEditProject}
+          onRemoveProject={handleRemoveProject}
           onExportProject={handleExportProject}
           onImportProject={handleImportProject}
-          onSelectProject={setCurrentProjectId}
+          onSelectProject={handleSelectProject}
           currentProjectId={currentProjectId}
+          onClearStorage={handleClearStorage}
         />
         <div className="content">
           <Tabs currentStep={currentStep} onTabClick={handleTabClick} />
           {error && <div className="error">{error}</div>}
-          {[1, 2, 3].map(step => (
+          {currentProjectId && (
             <Step
-              key={step}
-              stepNumber={step}
+              stepNumber={currentStep}
               currentStep={currentStep}
-              versions={responses[step] || [""]}
-              currentVersionIndex={currentVersions[step]}
-              onVersionChange={(direction) => handleVersionChange(step, direction)}
-              onGenerate={(inputValues) => handleGenerate(inputValues)}
-              onNextSection={() => handleNextSection(step)}
-              onProofread={handleProofread}
-              step1Responses={responses[1] || []} // Pass Step 1 responses to Step component
-              step2Versions={responses[2] || []} // Pass Step 2 responses to Step component
-              step1Inputs={step1Inputs} // Pass Step 1 input values to Step component
-              setStep1Inputs={setStep1Inputs} // Pass setState function for Step 1 input values to Step component
+              project={projects.find(project => project.id === currentProjectId)}
+              onGenerate={handleGenerate}
+              onNextSection={handleNextSection}
+              currentVersionIndex={projects.find(project => project.id === currentProjectId).currentVersions[currentStep]}
+              setCurrentVersionIndex={(index) => {
+                const updatedProjects = projects.map(project => {
+                  if (project.id === currentProjectId) {
+                    project.currentVersions[currentStep] = index;
+                  }
+                  return project;
+                });
+                setProjects(updatedProjects);
+              }}
             />
-          ))}
+          )}
         </div>
       </div>
     </div>
   );
-}
+};
 
 export default App;

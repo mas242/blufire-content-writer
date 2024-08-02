@@ -1,15 +1,18 @@
 .project-list {
-    width: 200px;
     background-color: #f4f4f4;
     padding: 10px;
+    border-bottom: 1px solid #ccc;
     border-right: 1px solid #ccc;
+    height: 100%; /* Ensure it takes full height */
+    display: flex;
+    flex-direction: column;
   }
   
-  .project-list-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
+  .project-list-items {
+    border: 1px solid #ccc; /* Add border around project list items */
+    padding: 10px;
+    background-color: #f9f9f9;
+    flex-grow: 1;
   }
   
   .add-project-button {
@@ -18,25 +21,53 @@
     border: none;
     padding: 5px 10px;
     cursor: pointer;
-    font-size: 16px;
+    font-size: 14px; /* Smaller font size */
+    border-radius: 5px;
+    display: block; /* Ensure buttons are block level */
+    margin-bottom: 10px; /* Add space between buttons */
   }
   
   .add-project-button:hover {
     background-color: #45a049;
   }
   
+  .upload-project-label {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-size: 14px; /* Smaller font size */
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px; /* Add space between buttons */
+  }
+  
+  .upload-project-label:hover {
+    background-color: #45a049;
+  }
+  
+  .upload-project-label input {
+    display: none;
+  }
+  
+  .upload-project-label span {
+    margin-right: 5px;
+  }
+  
   .project-list ul {
     list-style: none;
     padding: 0;
     margin: 0;
+    height: calc(100% - 150px); /* Adjust height to account for buttons */
+    overflow-y: auto; /* Enable scrolling */
   }
   
   .project-list li {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
     padding: 5px;
     cursor: pointer;
+    margin-bottom: 10px; /* Add space between project items */
   }
   
   .project-list li.active {
@@ -44,18 +75,37 @@
   }
   
   .project-list li span {
-    flex-grow: 1;
+    display: block;
+    margin-bottom: 5px;
   }
   
-  .project-list li button {
-    background-color: #ddd;
+  .project-buttons {
+    display: flex;
+    justify-content: space-between;
+  }
+  
+  .small-button {
+    background-color: darkred;
+    color: white;
     border: none;
+    padding: 3px 7px; /* Smaller padding */
     cursor: pointer;
-    margin-left: 5px;
   }
   
-  .project-list li button:hover {
-    background-color: #ccc;
+  .small-button:hover {
+    background-color: red;
+  }
+  
+  .darkred-button {
+    background-color: darkred;
+    color: white;
+  }
+  
+  .project-functions {
+    display: flex;
+    flex-direction: column; /* Stack buttons vertically */
+    gap: 10px;
+    margin-bottom: 10px; /* Add margin below buttons */
   }
   
   .dialog {
@@ -78,5 +128,18 @@
   
   .dialog button {
     margin-right: 10px;
+  }
+  
+  .remove-all-button {
+    background-color: darkred;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 14px; /* Smaller font size */
+    border-radius: 5px;
+    display: block; /* Ensure it appears below the other buttons */
+    margin-left: auto; /* Align to the right */
+    margin-right: auto; /* Center horizontally */
   }
   
