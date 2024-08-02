@@ -126,21 +126,21 @@ const Step = ({ stepNumber, currentStep, versions = [""], currentVersionIndex, o
               <select onChange={(e) => setSelectedStep1Version(e.target.value)}>
                 {step1Responses.map((response, index) => (
                   <option key={index} value={index}>
-                    Version {index + 1}
+                    Outline {index + 1}
                   </option>
                 ))}
               </select>
-              <button onClick={handleStartClick} disabled={loading} className={loading ? 'disabled-button' : ''}>Start</button>
-              <button onClick={handleNextSectionClick} disabled={loading} className={loading ? 'disabled-button' : ''}>Next Section</button>
-            </div>
+              <button onClick={handleStartClick} disabled={loading} className={loading ? 'disabled-button' : ''}>Start Section Generate</button>
+              <button onClick={handleNextSectionClick} disabled={loading} className={loading ? 'disabled-button' : ''}>Generate Next Section</button>
             <button onClick={handleGenerateFullArticleClick} disabled={loading} className={loading ? 'disabled-button' : ''}>Generate Full Article</button>
+            </div>
             <button onClick={handleProofreadClick} disabled={loading} className={loading ? 'disabled-button' : ''}>Proofread</button>
           </>
         )}
         {stepNumber === 3 && (
           <>
             <div className="step2-version">
-              <span>Proofreading Based off Step 2 Version: {versions[currentVersionIndex]?.step2VersionIndex + 1}</span>
+              <span>Proofreading of Article Version {versions[currentVersionIndex]?.step2VersionIndex + 1}</span>
             </div>
           </>
         )}
